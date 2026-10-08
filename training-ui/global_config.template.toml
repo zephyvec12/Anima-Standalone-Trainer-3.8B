@@ -1,6 +1,12 @@
 venv_path = ""
 
 [model_paths]
+# Anima 3.8B Paths
+anima38_dit_path = ""
+anima38_qwen3_path = ""
+anima38_qwen35_path = ""
+anima38_vae_path = ""
+
 # Anima Paths
 dit_path = ""
 qwen3_path = ""
