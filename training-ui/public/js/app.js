@@ -578,6 +578,7 @@ function populateConfig(config) {
   $("cfg-hf-resume-path").value = (hfResumeEnabled && t.resume) ? t.resume : "";
   updateHfResumeUI(hfResumeEnabled);
   updateHfUI(hfEnabled);
+  updateAnima38Controls();
 }
 function populateDataset(dataset) {
   const g = dataset.general || {};
@@ -1716,7 +1717,9 @@ async function loadSamples(isUpdate = false) {
     sampleState.samplesJob = currentJob;
     sampleState.expandedGroups.clear();
   }
-  const images = await api(`/api/jobs/${currentJob}/samples`);
+  const jobAtStart = currentJob;
+  const images = await api(`/api/jobs/${jobAtStart}/samples`);
+  if (currentJob !== jobAtStart) return;
   const container = $("samples-grid");
   const empty = $("samples-empty");
   if (!images || images.length === 0) {
@@ -1744,12 +1747,13 @@ function renderSampleGroups(images) {
   const groups = {};
   images.forEach((img) => {
     let groupKey;
-    if (orderMap.has(img.path)) {
-      groupKey = orderMap.get(img.path).group;
-    } else {
-      const match = img.name.match(/_(\d{2,})_\d{14}/);
-      groupKey = match ? match[1] : "default";
-    }
+    const identity = AnimaSampleIdentity.parse(img);
+    const savedGroup = orderMap.get(img.path)?.group;
+    // A previous failed parse may have saved "default" for all native images.
+    // Recover those groups while preserving deliberate moves between prompts.
+    groupKey = savedGroup && !(savedGroup === "default" && identity.promptIndex !== null)
+      ? (/^\d+$/.test(savedGroup) ? String(Number(savedGroup)) : savedGroup)
+      : identity.groupKey;
     if (!groups[groupKey]) groups[groupKey] = [];
     groups[groupKey].push(img);
   });
@@ -1784,7 +1788,7 @@ function renderSampleGroups(images) {
       if (orderA && orderB) return orderA.index - orderB.index;
       if (orderA) return 1; // Saved items come after new items?
       if (orderB) return -1;
-      return b.mtime - a.mtime; // Default newest first for items without saved order
+      return AnimaSampleIdentity.compareNewest(a, b);
     });
     const total = groups[key].length;
     const expanded = sampleState.expandedGroups.has(key);
@@ -1856,7 +1860,8 @@ function createSampleCard(img, container) {
   }
   card.innerHTML = `
         <img src="${img.path}" alt="${escapeHtml(img.name)}" loading="lazy" draggable="false">
-        <div class="sample-name">${escapeHtml(img.name)}</div>
+        <div class="sample-step">${escapeHtml(AnimaSampleIdentity.caption(img))}</div>
+        <div class="sample-name" title="${escapeHtml(img.name)}">${escapeHtml(img.name)}</div>
         <button class="btn-delete-card" title="Delete Image">🗑</button>
     `;
   // Delete Card Logic
