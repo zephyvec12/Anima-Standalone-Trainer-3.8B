@@ -1691,3 +1691,4 @@ input:disabled, select:disabled {
     filter: grayscale(0.8);
     transition: opacity 0.2s ease;
 }
+.sample-step { font-weight: 600; padding: 6px 8px 0; font-size: 0.85rem; }
