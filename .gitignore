@@ -47,6 +47,13 @@ training-ui/jobs/
 training-ui/public/uploads/
 training-ui/global_config.toml
 training-ui/_merged_config.toml
+venv38/
+backends/
+.anima38/
+*.npz
+*.zip
+*.backup
+*.bak
 
 # OS
 .DS_Store
