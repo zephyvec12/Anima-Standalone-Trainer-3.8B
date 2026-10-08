@@ -6,6 +6,7 @@ const TOML = require('@iarna/toml');
 const net = require('net');
 const http = require('http');
 const WebSocket = require('ws');
+const sampleIdentity = require('./public/js/sample-identities');
 
 require('./lib/setup').runSetup();
 
@@ -439,6 +440,9 @@ function buildTrainingConfig(jobName, jobPath) {
     // Lumina arguments
     if (jobConfig.lumina_arguments) {
         merged.lumina_arguments = { ...jobConfig.lumina_arguments };
+    }
+    if (arch.training_section && jobConfig[arch.training_section]) {
+        merged[arch.training_section] = { ...jobConfig[arch.training_section] };
     }
 
     return merged;
@@ -1217,6 +1221,9 @@ app.post('/api/jobs/:name/generate', async (req, res) => {
 
         // Resolve architecture from job config
         const genArch = getArchForJob(mergedConfig);
+        if (!genArch.scripts.generate) {
+            return res.status(400).json({ error: 'Anima 3.8B currently generates saved trials during training. Manual Generate is not available for this architecture.' });
+        }
         const genScript = path.join(ROOT_DIR, genArch.scripts.generate);
 
         // Extract args
@@ -1548,10 +1555,9 @@ app.post('/api/jobs/:name/train/start', async (req, res) => {
 
         // Get venv path from global config
         const globalConfig = getGlobalConfig();
-        const venvPath = toNativePath(globalConfig.venv_path || path.join(ROOT_DIR, 'venv'));
-        const venv = getVenvPaths(venvPath);
-
         const jobArch = getArchForJob(mergedConfig);
+        const venvPath = toNativePath(globalConfig.venv_path || path.join(ROOT_DIR, jobArch.id === 'anima38' ? 'venv38' : 'venv'));
+        const venv = getVenvPaths(venvPath);
         const hasNetwork = !!(mergedConfig.network_arguments && mergedConfig.network_arguments.network_module);
 
         let currentGpuIds = '';
@@ -1583,6 +1589,7 @@ app.post('/api/jobs/:name/train/start', async (req, res) => {
             trainCmd = tpTrainCmd;
         } else {
             let scriptName = hasNetwork ? jobArch.scripts.train_network : jobArch.scripts.train;
+            if (!scriptName) return res.status(400).json({ error: 'This architecture supports LoRA training only.' });
             if (scriptName === 'anima_train.py' && mergedConfig.training_arguments?.use_muon) {
                 scriptName = 'anima_train_muon.py';
             }
@@ -1764,6 +1771,7 @@ function collectImages(dir, relBase, jobName) {
             const stat = fs.statSync(fullPath);
             const relPath = path.join(relBase, entry.name).replace(/\\/g, '/');
             images.push({
+                ...sampleIdentity.parse({ name: entry.name, dir: relBase }),
                 name: entry.name,
                 dir: relBase.replace(/\\/g, '/'),
                 mtime: stat.mtimeMs,
