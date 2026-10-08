@@ -1,13 +1,13 @@
 [general]
 enable_bucket = true
 bucket_no_upscale = true
-min_bucket_reso = 512
+min_bucket_reso = 256
 max_bucket_reso = 1536
-bucket_reso_steps = 64
+bucket_reso_steps = 16
 
 [[datasets]]
 resolution = [1536, 1536]
-batch_size = 1
+batch_size = 2
 caption_extension = ".txt"
 
   [[datasets.subsets]]
