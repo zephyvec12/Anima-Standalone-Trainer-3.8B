@@ -88,6 +88,8 @@ function ensureWdParallel() {
 }
 
 function runSetup() {
+    // The native 3.8B adapter does not import legacy TP/SP extension packages.
+    if (fs.existsSync(path.join(ROOT_DIR, 'backends', 'anima38', 'sd-scripts', 'ANIMA38_BACKEND.json'))) return;
     ensureCudaDirectBackend();
     ensureWdParallel();
 }
