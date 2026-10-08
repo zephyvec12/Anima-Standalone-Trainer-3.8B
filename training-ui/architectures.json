@@ -2,7 +2,9 @@
   "architectures": {
     "anima": {
       "display_name": "Anima",
-      "network_modules": ["networks.lora_anima"],
+      "network_modules": [
+        "networks.lora_anima"
+      ],
       "scripts": {
         "train": "anima_train.py",
         "train_network": "anima_train_network.py",
@@ -42,7 +44,9 @@
     },
     "lumina": {
       "display_name": "Lumina",
-      "network_modules": ["networks.lora_lumina"],
+      "network_modules": [
+        "networks.lora_lumina"
+      ],
       "scripts": {
         "train": "lumina_train.py",
         "train_network": "lumina_train_network.py",
@@ -98,7 +102,42 @@
       "all_in_one": true,
       "fsdp_transformer_cls": "JointTransformerBlock",
       "all_in_one_source_key": "lumina_dit_path"
+    },
+    "anima38": {
+      "display_name": "Anima 3.8B v1.1",
+      "network_modules": [
+        "networks.lora_anima38"
+      ],
+      "scripts": {
+        "train_network": "anima38_ui_launcher.py"
+      },
+      "global_paths": {
+        "anima38_dit_path": {
+          "label": "Anima 3.8B v1.1 Bundle",
+          "placeholder": "models/Anima-3.8B-v1.1.safetensors",
+          "cli_flag": "dit_path"
+        },
+        "anima38_qwen3_path": {
+          "label": "Qwen3 0.6B Text Encoder",
+          "placeholder": "models/qwen_3_06b_base.safetensors",
+          "cli_flag": "qwen3_path"
+        },
+        "anima38_qwen35_path": {
+          "label": "Qwen3.5 4B Text Encoder",
+          "placeholder": "models/qwen35_4b.safetensors",
+          "cli_flag": "qwen35_path"
+        },
+        "anima38_vae_path": {
+          "label": "Qwen Image VAE",
+          "placeholder": "models/qwen_image_vae.safetensors",
+          "cli_flag": "vae_path"
+        }
+      },
+      "gen_params": {},
+      "training_section": "anima38_arguments",
+      "all_in_one": false,
+      "fsdp_transformer_cls": "Block"
     }
   },
-  "default_architecture": "anima"
+  "default_architecture": "anima38"
 }
